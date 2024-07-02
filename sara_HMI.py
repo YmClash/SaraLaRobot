@@ -24,11 +24,11 @@ def connecter_robot():
         board = pyfirm.Arduino(PORT)
         is_connected = True
         print("Successfully connected to the robot.")
-        # status_label.config(text="STATUS: ON", fg="green")
+        status_label.configure(text="STATUS: ON", fg_color="green")
     except Exception as e:
         is_connected = False
         print(f"Failed to connect to {PORT}: {e}")
-        # status_label.config(text="STATUS: OFF", fg="red")
+        status_label.configure(text="STATUS: OFF", fg_color="red")
 def check_connexion():
     print("Avalable devices:")
     port_list = serial.tools.list_ports.comports()
@@ -54,6 +54,12 @@ def open_arm():
 
 def close_arm():
     print("Close Arm")
+
+
+def exit():
+    print("Fin du programme")
+    root_tk.quit()
+
 
 # Création des labels et des entrées pour les axes
 custom.CTkLabel(master=root_tk, text="Axe X").grid(row=0, column=0, padx=10, pady=10)
@@ -84,13 +90,22 @@ connect_button.grid(row=5,column=0,columnspan=2,pady=10)
 
 # création du label pour le status de la connexion
 
-status_label = custom.CTkLabel(master=root_tk,text="STATUS: OFF",fg_color="red")
+status_label = custom.CTkLabel(master=root_tk,text="  STATUS: OFF  ",fg_color="red")
 status_label.grid(row=6,column=0,columnspan=2,pady=10)
 
+# création de la barre de progression
 progressbar = custom.CTkProgressBar(root_tk, orientation="horizontal")
+progressbar.configure(mode="indeterminate")
+progressbar.set(0)
+progressbar.grid(row=10,column=0,columnspan=2,pady=10)
+
+
 
 check_button = custom.CTkButton(master=root_tk,text="Check connexion",command=check_connexion)
 check_button.grid(row=9,column=0,columnspan=2,pady=10)
+
+exit_button = custom.CTkButton(master=root_tk,text="Exit",command=exit)
+exit_button.grid(row=11,column=0,columnspan=2,pady=10)
 
 
 # Lancer la boucle principale de l'interface
