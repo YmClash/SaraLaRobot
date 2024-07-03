@@ -1,3 +1,4 @@
 pygame
-customtkinter==5.2.0
+customtkinter
+pyfirmata2
 numpy

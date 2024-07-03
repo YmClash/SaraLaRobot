@@ -1,4 +1,3 @@
-import tkinter as tk
 import customtkinter as custom
 import pyfirmata2 as pyfirm
 import serial.tools.list_ports
@@ -37,6 +36,17 @@ def check_connexion():
     else:
         for port in port_list:
             print(port.device,port.description)
+
+
+def deconnexion():
+    global is_connected,board
+    if is_connected:
+        board.exit()
+        is_connected = False
+        status_label.configure(text=" STATUS: OFF ",fg_color="red")
+        print("Deconnexion reussie")
+    else:
+        print("Aucune connexion active")
 
 
 
@@ -92,6 +102,9 @@ connect_button.grid(row=5,column=0,columnspan=2,pady=10)
 
 status_label = custom.CTkLabel(master=root_tk,text="  STATUS: OFF  ",fg_color="red")
 status_label.grid(row=6,column=0,columnspan=2,pady=10)
+
+deconnexion_button = custom.CTkButton(master= root_tk,text="Deconnexion",command=deconnexion)
+deconnexion_button.grid(row=7,column=0,columnspan=2,pady=10)
 
 # création de la barre de progression
 progressbar = custom.CTkProgressBar(root_tk, orientation="horizontal")
