@@ -1,24 +1,30 @@
 import customtkinter as custom
 import pyfirmata2 as pyfirm
 import serial.tools.list_ports
+import random
 
 
 
 # Initialiser la fenêtre principale
 # root_tk = tk.Tk()
 root_tk = custom.CTk()
-root_tk.geometry("300x500")
+root_tk.geometry("300x600")
 root_tk.title("Sara HMI")
 
 is_connected = False
 board = None
+PORT = None
+
+
 
 # Fonctions
+
+
 
 def connecter_robot():
     global is_connected, board
     try:
-        PORT = 'COM4' # Assurez-vous que ce port est correct pour votre Arduino
+        PORT = pyfirm.Arduino.AUTODETECT #'COM4' # Assurez-vous que ce port est correct pour votre Arduino
         print(f"Trying to connect to {PORT}")
         board = pyfirm.Arduino(PORT)
         is_connected = True
@@ -55,6 +61,7 @@ def move_robot():
     x = axe_x_entry.get()
     y = axe_y_entry.get()
     z = axe_z_entry.get()
+
     print(f"Move Robot to X: {x}, Y: {y}, Z: {z}")
 
 def open_arm():

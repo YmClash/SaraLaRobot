@@ -45,14 +45,23 @@ while running:
             x,y = pygame.mouse.get_pos()
             if 100<=x<=200 and 100<=y<=150:
                 send_command("Move X")
+                print(f'position x {x} position {y}')
             elif 100<=x<=200 and 200<=y<=250:
                 send_command("Move Y")
+                print(f'position x {x} position {y}')
+
             elif 100<=x<=200 and 300<=y<=350:
                 send_command("Move Z")
+                print(f'position x {x} position {y}')
+
             elif 100<=x<=200 and 400<=y<=450:
                 send_command("Open Arm")
+                print(f'position x {x} position {y}')
+
             elif 100<=x<=200 and 500<=y<=550:
                 send_command("Close Arm")
+                print(f'position x {x} position {y}')
+
 
     screen.fill(RANDOM_COLOR)
     draw_button(screen,"Move X",100,100,150,50,GREEN)
