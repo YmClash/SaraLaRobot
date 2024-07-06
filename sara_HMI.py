@@ -19,17 +19,24 @@ PORT = None
 
 # Fonctions
 
+def autodetect():
+    port_list = serial.tools.list_ports.comports()
+    for port in port_list:
+        PORT = port[0]
+    return PORT
 
 
 def connecter_robot():
     global is_connected, board
     try:
-        PORT = pyfirm.Arduino.AUTODETECT #'COM4' # Assurez-vous que ce port est correct pour votre Arduino
+        PORT = autodetect() # # nous avons  cree  une fonction autodetect qui permet de detecter le port automatiquement
         print(f"Trying to connect to {PORT}")
         board = pyfirm.Arduino(PORT)
         is_connected = True
         print("Successfully connected to the robot.")
         status_label.configure(text="STATUS: ON", fg_color="green")
+        connect_button.configure(text="ONLINE",state="disabled")
+
     except Exception as e:
         is_connected = False
         print(f"Failed to connect to {PORT}: {e}")
@@ -39,6 +46,7 @@ def check_connexion():
     port_list = serial.tools.list_ports.comports()
     if len(port_list) == 0:
         print("No device found")
+        status_label.configure(text="STATUS: OFF", fg_color="red")
     else:
         for port in port_list:
             print(port.device,port.description)
@@ -50,6 +58,7 @@ def deconnexion():
         board.exit()
         is_connected = False
         status_label.configure(text=" STATUS: OFF ",fg_color="red")
+        connect_button.configure(text="Connect",state="normal")
         print("Deconnexion reussie")
     else:
         print("Aucune connexion active")
