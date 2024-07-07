@@ -89,15 +89,15 @@ def exit():
 
 # Création des labels et des entrées pour les axes
 custom.CTkLabel(master=root_tk, text="Axe X").grid(row=0, column=0, padx=10, pady=10)
-axe_x_entry = custom.CTkEntry(master=root_tk)
+axe_x_entry = custom.CTkEntry(master=root_tk,placeholder_text="mm")
 axe_x_entry.grid(row=0, column=1, padx=10, pady=10)
 
 custom.CTkLabel(master=root_tk, text="Axe Y").grid(row=1, column=0, padx=10, pady=10)
-axe_y_entry = custom.CTkEntry(master=root_tk)
+axe_y_entry = custom.CTkEntry(master=root_tk,placeholder_text="mm")
 axe_y_entry.grid(row=1, column=1, padx=10, pady=10)
 
 custom.CTkLabel(master=root_tk, text="Axe Z").grid(row=2, column=0, padx=10, pady=10)
-axe_z_entry = custom.CTkEntry(master=root_tk)
+axe_z_entry = custom.CTkEntry(master=root_tk,placeholder_text="mm")
 axe_z_entry.grid(row=2, column=1, padx=10, pady=10)
 
 # Création des boutons
