@@ -2,14 +2,18 @@ import customtkinter as custom
 import pyfirmata2 as pyfirm
 import serial.tools.list_ports
 import random
+import time
 
 
+RAMDOM_COLOR = [random.randint(0,255),random.randint(0,255),random.randint(0,255)]
 
 # Initialiser la fenêtre principale
 # root_tk = tk.Tk()
 root_tk = custom.CTk()
-root_tk.geometry("300x800")
+root_tk.geometry("1500x700")
 root_tk.title("Sara HMI")
+
+
 
 is_connected = False
 board = None
@@ -36,6 +40,7 @@ def connecter_robot():
         print("Successfully connected to the robot.")
         status_label.configure(text="STATUS: ON", fg_color="green")
         connect_button.configure(text="ONLINE",state="disabled")
+        output_log_frame.configure(text="Successfully connected to the robot.",fg_color="green")
 
     except Exception as e:
         is_connected = False
@@ -47,9 +52,12 @@ def check_connexion():
     if len(port_list) == 0:
         print("No device found")
         status_label.configure(text="STATUS: OFF", fg_color="red")
+        output_log_frame.configure(text="No device found",fg_color="red")
     else:
         for port in port_list:
             print(port.device,port.description)
+            output_log_frame.configure(text=f"{port.device} - {port.description}",fg_color="green")
+
 
 
 def deconnexion():
@@ -60,26 +68,41 @@ def deconnexion():
         status_label.configure(text=" STATUS: OFF ",fg_color="red")
         connect_button.configure(text="Connect",state="normal")
         print("Deconnexion reussie")
+        output_log_frame.configure(text="Deconnexion reussie",fg_color="red")
     else:
         print("Aucune connexion active")
+        output_log_frame.configure(text="Aucune connexion active",fg_color="red")
 
 
 
 
 def move_robot():
-    x = axe_x_entry.get()
-    y = axe_y_entry.get()
-    z = axe_z_entry.get()
-
-    print(f"Move Robot to X: {x}, Y: {y}, Z: {z}")
+    if is_connected:
+        x:int = axe_x_entry.get()
+        y:int = axe_y_entry.get()
+        z:int = axe_z_entry.get()
+        print(f"Move Robot to X: {x}, Y: {y}, Z: {z}")
+        output_log_frame.configure(text=f"Move Robot to X: {x}, Y: {y}, Z: {z}")
+    else:
+        print("Robot not connected")
+        output_log_frame.configure(text="Robot not connected",fg_color="red")
 
 def open_arm():
     if is_connected:
         print("Open Arm")
-    print("Open Arm")
+        output_log_frame.configure(text="Open Arm")
+    else:
+        print("Robot not connected")
+        output_log_frame.configure(text="Robot not connected",fg_color="red")
 
 def close_arm():
-    print("Close Arm")
+    if is_connected:
+        print("Close Arm")
+        output_log_frame.configure(text="Close Arm")
+    else:
+        print("Robot not connected")
+        output_log_frame.configure(text="Robot not connected",fg_color="red")
+
 
 
 def exit():
@@ -92,7 +115,18 @@ def choix():
     # print(option)
 
 def upload_firmware():
-    print("Upload firmware")
+    if is_connected:
+        print("Upload firmware")
+        output_log_frame.configure(text="Upload started....")
+        progressbar.start()
+        time.sleep(5)
+        progressbar.stop()
+        print("Firmware uploaded")
+        output_log_frame.configure(text="Firmware uploaded")
+    else:
+        print("Robot not connected")
+        output_log_frame.configure(text="Robot not connected",fg_color="red")
+
     # //TODO: implementer l'upload du firmware et le progress bar
 
 
@@ -136,9 +170,10 @@ deconnexion_button.grid(row=7,column=0,columnspan=2,pady=10)
 
 
 
-
 check_button = custom.CTkButton(master=root_tk,text="Check connexion",command=check_connexion)
 check_button.grid(row=8,column=0,columnspan=2,pady=10)
+
+# Button upload firmware
 
 option_menu_var = custom.StringVar(value="Type de robot")
 option_menu = custom.CTkOptionMenu(master=root_tk,values=["SCARA"],command=choix(),variable=option_menu_var)
@@ -152,10 +187,21 @@ upload_firmware_button.grid(row=10,column=0,columnspan=2,pady=10)
 
 
 # création de la barre de progression
-progressbar = custom.CTkProgressBar(root_tk, orientation="horizontal")
-progressbar.configure(mode="indeterminate")
+progressbar = custom.CTkProgressBar(root_tk, orientation="horizontal",determinate_speed=50)
+progressbar.configure(mode="determinate")
 progressbar.set(0)
 progressbar.grid(row=11,column=0,columnspan=2,pady=10)
+
+
+# Création de la zone de texte pour afficher les logs
+view_frame = custom.CTkTextbox(master=root_tk,width=600,height=600)
+view_frame.grid(row=0,column=3,rowspan=12,padx=10,pady=10)
+
+# Moniteur de sortie
+
+output_log_frame = custom.CTkLabel(master=root_tk,text="COMMAND",width=300,height=50,fg_color="orange",bg_color="white")
+output_log_frame.grid(row=12,column=3,rowspan=12,padx=10,pady=10)
+
 
 
 
