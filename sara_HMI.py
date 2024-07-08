@@ -8,7 +8,7 @@ import random
 # Initialiser la fenêtre principale
 # root_tk = tk.Tk()
 root_tk = custom.CTk()
-root_tk.geometry("300x600")
+root_tk.geometry("300x800")
 root_tk.title("Sara HMI")
 
 is_connected = False
@@ -86,8 +86,19 @@ def exit():
     print("Fin du programme")
     root_tk.quit()
 
+def choix():
+    print("choix")
+    # option = option_menu.get()
+    # print(option)
+
+def upload_firmware():
+    print("Upload firmware")
+    # //TODO: implementer l'upload du firmware et le progress bar
+
+
 
 # Création des labels et des entrées pour les axes
+
 custom.CTkLabel(master=root_tk, text="Axe X").grid(row=0, column=0, padx=10, pady=10)
 axe_x_entry = custom.CTkEntry(master=root_tk,placeholder_text="mm")
 axe_x_entry.grid(row=0, column=1, padx=10, pady=10)
@@ -119,22 +130,38 @@ connect_button.grid(row=5,column=0,columnspan=2,pady=10)
 status_label = custom.CTkLabel(master=root_tk,text="  STATUS: OFF  ",fg_color="red")
 status_label.grid(row=6,column=0,columnspan=2,pady=10)
 
+
 deconnexion_button = custom.CTkButton(master= root_tk,text="Deconnexion",command=deconnexion)
 deconnexion_button.grid(row=7,column=0,columnspan=2,pady=10)
+
+
+
+
+check_button = custom.CTkButton(master=root_tk,text="Check connexion",command=check_connexion)
+check_button.grid(row=8,column=0,columnspan=2,pady=10)
+
+option_menu_var = custom.StringVar(value="Type de robot")
+option_menu = custom.CTkOptionMenu(master=root_tk,values=["SCARA"],command=choix(),variable=option_menu_var)
+option_menu.grid(row=9,column=0,columnspan=2,pady=10)
+
+
+upload_firmware_button = custom.CTkButton(master=root_tk,text="Upload Firmware",command=upload_firmware)
+upload_firmware_button.grid(row=10,column=0,columnspan=2,pady=10)
+
+
+
 
 # création de la barre de progression
 progressbar = custom.CTkProgressBar(root_tk, orientation="horizontal")
 progressbar.configure(mode="indeterminate")
 progressbar.set(0)
-progressbar.grid(row=10,column=0,columnspan=2,pady=10)
+progressbar.grid(row=11,column=0,columnspan=2,pady=10)
 
 
 
-check_button = custom.CTkButton(master=root_tk,text="Check connexion",command=check_connexion)
-check_button.grid(row=9,column=0,columnspan=2,pady=10)
 
 exit_button = custom.CTkButton(master=root_tk,text="Exit",command=exit)
-exit_button.grid(row=11,column=0,columnspan=2,pady=10)
+exit_button.grid(row=12,column=0,columnspan=2,pady=10)
 
 
 # Lancer la boucle principale de l'interface
