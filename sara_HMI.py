@@ -143,6 +143,16 @@ def upload_image():
 
 
 
+def led():
+    while is_connected:
+        board.digital[13].write(True)
+        time.sleep(0.1)
+    else:
+        print("Robot not connected")
+    # // TODO: implementer le controle de la led
+
+
+
 
 # Création des labels et des entrées pour les axes
 
@@ -225,6 +235,9 @@ output_log_frame.grid(row=12,column=3,rowspan=12,padx=10,pady=10)
 upload_image_button = custom.CTkButton(master=root_tk,text="Upload Image",command=upload_image)
 upload_image_button.grid(row=12,column=4,columnspan=2,pady=10)
 
+
+led_button = custom.CTkButton(master=root_tk,text="LED",command=led)
+led_button.grid(row=11,column=4,columnspan=2,pady=10)
 
 
 exit_button = custom.CTkButton(master=root_tk,text="Exit",command=exit)
