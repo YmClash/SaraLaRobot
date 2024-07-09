@@ -3,6 +3,7 @@ import pyfirmata2 as pyfirm
 import serial.tools.list_ports
 import random
 import time
+from PIL import Image, ImageTk
 
 
 RAMDOM_COLOR = [random.randint(0,255),random.randint(0,255),random.randint(0,255)]
@@ -130,6 +131,18 @@ def upload_firmware():
     # //TODO: implementer l'upload du firmware et le progress bar
 
 
+def upload_image():
+    file_path = custom.filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.jpeg *.png")])
+    if file_path:
+        image = Image.open(file_path)
+        image = image.resize((400, 300),)
+        image_tk = ImageTk.PhotoImage(image)
+
+        view_frame.configure(image=image_tk)
+        view_frame.image = image_tk
+
+
+
 
 # Création des labels et des entrées pour les axes
 
@@ -194,15 +207,23 @@ progressbar.grid(row=11,column=0,columnspan=2,pady=10)
 
 
 # Création de la zone de texte pour afficher les logs
-view_frame = custom.CTkTextbox(master=root_tk,width=600,height=600)
+view_frame = custom.CTkLabel(master=root_tk,text="",width=600,height=600)
 view_frame.grid(row=0,column=3,rowspan=12,padx=10,pady=10)
+
+
+
+
+
+
+
 
 # Moniteur de sortie
 
 output_log_frame = custom.CTkLabel(master=root_tk,text="COMMAND",width=300,height=50,fg_color="orange",bg_color="white")
 output_log_frame.grid(row=12,column=3,rowspan=12,padx=10,pady=10)
 
-
+upload_image_button = custom.CTkButton(master=root_tk,text="Upload Image",command=upload_image)
+upload_image_button.grid(row=12,column=4,columnspan=2,pady=10)
 
 
 
