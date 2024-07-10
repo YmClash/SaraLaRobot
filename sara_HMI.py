@@ -1,3 +1,4 @@
+import subprocess
 import customtkinter as custom
 import pyfirmata2 as pyfirm
 import serial.tools.list_ports
@@ -117,13 +118,21 @@ def choix():
 
 def upload_firmware():
     if is_connected:
-        print("Upload firmware")
-        output_log_frame.configure(text="Upload started....")
-        progressbar.start()
-        time.sleep(5)
-        progressbar.stop()
-        print("Firmware uploaded")
-        output_log_frame.configure(text="Firmware uploaded")
+        file_path = custom.filedialog.askopenfilename(filetypes=[("Firmware files", "*.hex")])
+        if file_path :
+
+            print("Upload firmware")
+            output_log_frame.configure(text="Upload started....")
+            progressbar.start()
+
+            #  on utilise avrdude pour uploader le firmware
+            # command = f"avrdude -v -patmega328p -carduino -P{PORT} -b115200 -D -Uflash:w:{file_path}:i"
+            # subprocess.run(command,check=True,shell=True)
+
+            time.sleep(5)
+            progressbar.stop()
+            print("Firmware uploaded")
+            output_log_frame.configure(text="Firmware uploaded")
     else:
         print("Robot not connected")
         output_log_frame.configure(text="Robot not connected",fg_color="red")
@@ -144,9 +153,18 @@ def upload_image():
 
 
 def led():
+
     while is_connected:
-        board.digital[13].write(True)
-        time.sleep(0.1)
+        try:
+            board.digital[13].write(True)
+            print("LED ON")
+            time.sleep(5)
+            board.digital[13].write(False)
+            print("LED OFF")
+        except Exception as e :
+            print(f'Error: {e}')
+        return 0
+
     else:
         print("Robot not connected")
     # // TODO: implementer le controle de la led
