@@ -12,7 +12,7 @@ RAMDOM_COLOR = [random.randint(0,255),random.randint(0,255),random.randint(0,255
 # Initialiser la fenêtre principale
 # root_tk = tk.Tk()
 root_tk = custom.CTk()
-root_tk.geometry("1500x700")
+root_tk.geometry("1500x720")
 root_tk.title("Sara HMI")
 
 
@@ -151,6 +151,11 @@ def upload_image():
         view_frame.image = image_tk
 
 
+def reset_output_log_frame():
+    output_log_frame.configure(image=None)
+
+
+
 
 def led():
 
@@ -252,6 +257,9 @@ output_log_frame.grid(row=12,column=3,rowspan=12,padx=10,pady=10)
 
 upload_image_button = custom.CTkButton(master=root_tk,text="Upload Image",command=upload_image)
 upload_image_button.grid(row=12,column=4,columnspan=2,pady=10)
+
+reset_output_log_frame = custom.CTkButton(master=root_tk,text="Reset",command=reset_output_log_frame)
+reset_output_log_frame.grid(row=13,column=4,columnspan=2,pady=10)
 
 
 led_button = custom.CTkButton(master=root_tk,text="LED",command=led)
