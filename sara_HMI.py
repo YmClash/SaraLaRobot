@@ -153,6 +153,8 @@ def upload_image():
 
 def reset_output_log_frame():
     output_log_frame.configure(image=None)
+#     // TODo : implement   la  fonction  de  reunitialisation  du frame
+
 
 
 
