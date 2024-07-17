@@ -5,6 +5,7 @@ import serial.tools.list_ports
 import random
 import time
 from PIL import Image, ImageTk
+from customtkinter import CTkImage
 
 
 RAMDOM_COLOR = [random.randint(0,255),random.randint(0,255),random.randint(0,255)]
@@ -26,6 +27,7 @@ PORT = None
 # Fonctions
 
 def autodetect():
+    global PORT
     port_list = serial.tools.list_ports.comports()
     for port in port_list:
         PORT = port[0]
@@ -48,6 +50,7 @@ def connecter_robot():
         is_connected = False
         print(f"Failed to connect to {PORT}: {e}")
         status_label.configure(text="STATUS: OFF", fg_color="red")
+        output_log_frame.configure(text=f"Failed to connect to {PORT}: {e}",fg_color="red")
 def check_connexion():
     print("Avalable devices:")
     port_list = serial.tools.list_ports.comports()
@@ -80,11 +83,15 @@ def deconnexion():
 
 def move_robot():
     if is_connected:
-        x:int = axe_x_entry.get()
-        y:int = axe_y_entry.get()
-        z:int = axe_z_entry.get()
-        print(f"Move Robot to X: {x}, Y: {y}, Z: {z}")
-        output_log_frame.configure(text=f"Move Robot to X: {x}, Y: {y}, Z: {z}")
+        try:
+            x:int = int(axe_x_entry.get())
+            y:int = int(axe_y_entry.get())
+            z:int = int(axe_z_entry.get())
+            print(f"Move Robot to X: {x}, Y: {y}, Z: {z}")
+            output_log_frame.configure(text=f"Move Robot to X: {x}, Y: {y}, Z: {z}",fg_color="green")
+        except ValueError as e:
+            print(f'invalid input : {e}')
+            output_log_frame.configure(text="Invalid input",fg_color="red")
     else:
         print("Robot not connected")
         output_log_frame.configure(text="Robot not connected",fg_color="red")
@@ -109,10 +116,10 @@ def close_arm():
 
 def exit():
     print("Fin du programme")
-    root_tk.quit()
+    root_tk.destroy()
 
-def choix():
-    print("choix")
+def choix(option):
+    print(f"choix:o {option}")
     # option = option_menu.get()
     # print(option)
 
@@ -145,14 +152,17 @@ def upload_image():
     if file_path:
         image = Image.open(file_path)
         image = image.resize((400, 300),)
-        image_tk = ImageTk.PhotoImage(image)
+        image_tk = CTkImage(dark_image=image,size=(400,300))
 
-        view_frame.configure(image=image_tk)
+        view_frame.configure(image=image_tk,text="")
         view_frame.image = image_tk
 
 
 def reset_output_log_frame():
-    output_log_frame.configure(image=None)
+    view_frame.configure(image=None,text="")
+    view_frame.image = None
+    # output_log_frame.configure(text="",fg_color="black")
+
 #     // TODo : implement   la  fonction  de  reunitialisation  du frame
 
 
@@ -224,7 +234,7 @@ check_button.grid(row=8,column=0,columnspan=2,pady=10)
 # Button upload firmware
 
 option_menu_var = custom.StringVar(value="Type de robot")
-option_menu = custom.CTkOptionMenu(master=root_tk,values=["SCARA"],command=choix(),variable=option_menu_var)
+option_menu = custom.CTkOptionMenu(master=root_tk,values=["SCARA"],command=choix,variable=option_menu_var)
 option_menu.grid(row=9,column=0,columnspan=2,pady=10)
 
 
@@ -275,75 +285,3 @@ exit_button.grid(row=12,column=0,columnspan=2,pady=10)
 # Lancer la boucle principale de l'interface
 root_tk.mainloop()
 
-
-
-#
-# class SaraHMI:
-#     def __init__(self,root):
-#         self.root = root
-#         self.root.title("Sara HMI")
-#         self.root.geometry("800x600")
-#         self.root.resizable(False,False)
-#         self.root.config(bg="white")
-#
-#         self.create_widgets()
-#
-#     def create_widgets(self):
-#         # les Widgets
-#         customtkinter.CTkLabel(self.root,text="Axe X").grid(row=0,column=0)
-#         self.X_entry = customtkinter.CTkEntry(self.root)
-#         self.X_entry.grid(row=0,column=1)
-#
-#         customtkinter.CTkLabel(self.root,text="Axe Y").grid(row=1,column=0)
-#         self.Y_entry = customtkinter.CTkEntry(self.root)
-#         self.Y_entry.grid(row=1,column=1)
-#
-#         customtkinter.CTkLabel(self.root,text="Axe Z").grid(row=2,column=0)
-#         self.Z_entry = customtkinter.CTkEntry(self.root)
-#         self.Z_entry.grid(row=2,column=1)
-#
-#
-#         #boutton pour envoyer les commande
-#
-#         customtkinter.CTkButton(self.root,text="Move",command=self.move_robot).grid(row=3,column=0, columnspan=2)
-#         customtkinter.CTkButton(self.root,text="Open Arm",command=self.open_arm).grid(row=4,column=0,)
-#         customtkinter.CTkButton(self.root,text="Close Arm",command=self.close_arm).grid(row=5,column=0,)
-#         # customtkinter.CTkButton(self.root,text="Envoyer",command=self.send_command).grid(row=3,column=0)
-#
-#     def move_robot(self):
-#
-#         x = self.X_entry.get()
-#         y = self.Y_entry.get()
-#         z = self.Z_entry.get()
-#         print("Move Robot")
-#
-#     def open_arm(self):
-#         print("Open Arm")
-#
-#     def close_arm(self):
-#         print("Close Arm")
-#
-#
-# if __name__ == "__main__":
-#     root = tk.Tk()
-#     app = SaraHMI(root)
-#     root.mainloop()
-
-
-
-
-
-
-#
-# root_tk = tk.Tk()  # create the Tk window like you normally do
-# root_tk.geometry("400x240")
-# root_tk.title("CustomTkinter Test")
-#
-# def button_function():
-#     print("button pressed")
-#
-# # Use CTkButton instead of tkinter Button
-# button = customtkinter.CTkButton(master=root_tk, corner_radius=10, command=button_function)
-# button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
-#
-# root_tk.mainloop()
