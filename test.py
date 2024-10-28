@@ -29,6 +29,7 @@ else:
 
 print(len(devices))
 
-
+string = "hello world"
 
 print("Hello World")
+print(type(string))
