@@ -1,3 +1,5 @@
+# SaraLaRobot\sara_HMI.py
+
 import subprocess
 import customtkinter as custom
 import pyfirmata2 as pyfirm
@@ -6,6 +8,57 @@ import random
 import time
 from PIL import Image, ImageTk
 from customtkinter import CTkImage
+
+# from adafruit_motorkit import MotorKit
+from pyfirmata2 import Arduino,util
+import threading
+
+
+class StepperMotor:
+    def __init__(self,board):
+        self.board = board
+        # Configuration des pins pour le moteur pas à pas
+        self.step_pin = board.get_pin('d:9:o')  # Pin STEP
+        self.dir_pin = board.get_pin('d:8:o')  # Pin DIR
+        self.enable_pin = board.get_pin('d:7:o')  # Pin ENABLE
+
+        self.speed = 100
+        self.current_position = 0
+        self.is_running = False
+
+    def enable(self):
+        self.enable_pin.write(0)
+    def disable(self):
+        self.enable_pin.write(1)
+
+    def set_direction(self,clockwise=True):
+        self.dir_pin.write(1 if clockwise else 0)
+
+    def step(self):
+        self.step_pin.write(1)
+        time.sleep(0.001)  # Courte impulsion
+        self.step_pin.write(0)
+        time.sleep(1.0 / self.speed)  # Délai entre les pas
+
+    def move_steps(self, steps):
+        if not self.is_running:
+            self.is_running = True
+            thread = threading.Thread(target=self._move_steps_thread, args=(steps,))
+            thread.start()
+
+    def _move_steps_thread(self, steps):
+        self.enable()
+        self.set_direction(steps > 0)
+        steps = abs(steps)
+
+        for _ in range(steps):
+            self.step()
+            self.current_position += 1 if steps > 0 else -1
+
+        self.disable()
+        self.is_running = False
+
+
 
 
 RAMDOM_COLOR = [random.randint(0,255),random.randint(0,255),random.randint(0,255)]
@@ -23,6 +76,8 @@ board = None
 PORT = None
 
 
+# nema = MotorKit()
+
 
 # Fonctions
 
@@ -31,17 +86,24 @@ def autodetect():
     port_list = serial.tools.list_ports.comports()
     for port in port_list:
         PORT = port[0]
+        # nema = MotorKit(PORT)
     return PORT
+    # return nema
 
 
 def connecter_robot():
-    global is_connected, board
+    global is_connected, board,stepper
     try:
         PORT = autodetect() # # nous avons  cree  une fonction autodetect qui permet de detecter le port automatiquement
         print(f"Trying to connect to {PORT}")
-        board = pyfirm.Arduino(PORT)
+        # board = pyfirm.Arduino(PORT)
+        board = Arduino(PORT)
+        # initialisation du moteur pas à pas
+        stepper = StepperMotor(board)
+
         is_connected = True
         print("Successfully connected to the robot.")
+
         status_label.configure(text="STATUS: ON", fg_color="green")
         connect_button.configure(text="ONLINE",state="disabled")
         output_log_frame.configure(text="Successfully connected to the robot.",fg_color="green")
@@ -51,6 +113,15 @@ def connecter_robot():
         print(f"Failed to connect to {PORT}: {e}")
         status_label.configure(text="STATUS: OFF", fg_color="red")
         output_log_frame.configure(text=f"Failed to connect to {PORT}: {e}",fg_color="red")
+
+def move_motor_steps():
+    pass
+
+def set_motor_speed():
+    pass
+
+
+
 def check_connexion():
     print("Avalable devices:")
     port_list = serial.tools.list_ports.comports()
@@ -87,6 +158,7 @@ def move_robot():
             x:int = int(axe_x_entry.get())
             y:int = int(axe_y_entry.get())
             z:int = int(axe_z_entry.get())
+
             print(f"Move Robot to X: {x}, Y: {y}, Z: {z}")
             output_log_frame.configure(text=f"Move Robot to X: {x}, Y: {y}, Z: {z}",fg_color="green")
         except ValueError as e:

@@ -3,3 +3,5 @@ customtkinter
 pyfirmata2
 flask
 numpy
+adafruit-circuitpython-motorkit
+adafruit-circuitpython-lis3dh
