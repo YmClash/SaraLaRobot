@@ -12,6 +12,7 @@ from customtkinter import CTkImage
 # from adafruit_motorkit import MotorKit
 from pyfirmata2 import Arduino,util
 import threading
+import serial
 
 
 class StepperMotor:
@@ -59,6 +60,43 @@ class StepperMotor:
         self.is_running = False
 
 
+class ConnectionMonitor:
+    def __init__(self,on_disconnect_callback):
+        self.running = False
+        self.port = None
+        self.on_disconnect = on_disconnect_callback
+        self.thread = None
+    def start(self,port):
+        self.port= port
+        self.running = True
+        self.thread = threading.Thread(target=self._monitor_connection)
+        self.thread.start = True
+        self.thread.start()
+
+    def stop(self):
+        self.running = False
+        if self.thread:
+            self.thread.join()
+
+    def _monitor_connection(self):
+        while self.running:
+            connected_port = [port.device for port in serial.tools.list_ports.comports()]
+            if self.port not in connected_port:
+                print(f"Deconnection detected{self.port}")
+                self.running = False
+                root_tk.after(0,self.on_disconnect)
+            time.sleep(1)
+
+
+def handle_disconnect():
+    global is_connected, board, stepper
+    print("Déconnexion détectée!")
+    is_connected = False
+    board = None
+    stepper = None
+    status_label.configure(text="STATUS: OFF", fg_color="red")
+    connect_button.configure(text="Connect", state="normal")
+    output_log_frame.configure(text="Déconnexion détectée! Câble débranché.", fg_color="red")
 
 
 RAMDOM_COLOR = [random.randint(0,255),random.randint(0,255),random.randint(0,255)]
@@ -71,12 +109,16 @@ root_tk.title("Sara HMI")
 
 
 
+
+
 is_connected = False
 board = None
 PORT = None
 
 
 # nema = MotorKit()
+
+connecter_monitor = ConnectionMonitor(handle_disconnect)
 
 
 # Fonctions
@@ -108,6 +150,9 @@ def connecter_robot():
         connect_button.configure(text="ONLINE",state="disabled")
         output_log_frame.configure(text="Successfully connected to the robot.",fg_color="green")
 
+        # Lancer le moniteur de connexion
+        connecter_monitor.start(PORT)
+
     except Exception as e:
         is_connected = False
         print(f"Failed to connect to {PORT}: {e}")
@@ -115,11 +160,33 @@ def connecter_robot():
         output_log_frame.configure(text=f"Failed to connect to {PORT}: {e}",fg_color="red")
 
 def move_motor_steps():
-    pass
+    if is_connected:
+        try:
+            steps = int(axe_x_entry.get())  # Utiliser l'entrée X pour le nombre de pas
+            stepper.move_steps(steps)
+            print(f"Moving motor {steps} steps")
+            output_log_frame.configure(text=f"Moving motor {steps} steps", fg_color="green")
+        except ValueError as e:
+            print(f'Invalid input: {e}')
+            output_log_frame.configure(text="Invalid input", fg_color="red")
+    else:
+        print("Robot not connected")
+        output_log_frame.configure(text="Robot not connected", fg_color="red")
+
 
 def set_motor_speed():
-    pass
-
+    if is_connected:
+        try:
+            speed = int(axe_y_entry.get())  # Utiliser l'entrée Y pour la vitesse
+            stepper.speed = speed
+            print(f"Set motor speed to {speed} steps/second")
+            output_log_frame.configure(text=f"Set motor speed to {speed} steps/second", fg_color="green")
+        except ValueError as e:
+            print(f'Invalid input: {e}')
+            output_log_frame.configure(text="Invalid input", fg_color="red")
+    else:
+        print("Robot not connected")
+        output_log_frame.configure(text="Robot not connected", fg_color="red")
 
 
 def check_connexion():
@@ -145,6 +212,7 @@ def deconnexion():
         connect_button.configure(text="Connect",state="normal")
         print("Deconnexion reussie")
         output_log_frame.configure(text="Deconnexion reussie",fg_color="red")
+        connecter_monitor.stop()
     else:
         print("Aucune connexion active")
         output_log_frame.configure(text="Aucune connexion active",fg_color="red")
@@ -152,21 +220,21 @@ def deconnexion():
 
 
 
-def move_robot():
-    if is_connected:
-        try:
-            x:int = int(axe_x_entry.get())
-            y:int = int(axe_y_entry.get())
-            z:int = int(axe_z_entry.get())
-
-            print(f"Move Robot to X: {x}, Y: {y}, Z: {z}")
-            output_log_frame.configure(text=f"Move Robot to X: {x}, Y: {y}, Z: {z}",fg_color="green")
-        except ValueError as e:
-            print(f'invalid input : {e}')
-            output_log_frame.configure(text="Invalid input",fg_color="red")
-    else:
-        print("Robot not connected")
-        output_log_frame.configure(text="Robot not connected",fg_color="red")
+# def move_robot():
+#     if is_connected:
+#         try:
+#             x:int = int(axe_x_entry.get())
+#             y:int = int(axe_y_entry.get())
+#             z:int = int(axe_z_entry.get())
+#
+#             print(f"Move Robot to X: {x}, Y: {y}, Z: {z}")
+#             output_log_frame.configure(text=f"Move Robot to X: {x}, Y: {y}, Z: {z}",fg_color="green")
+#         except ValueError as e:
+#             print(f'invalid input : {e}')
+#             output_log_frame.configure(text="Invalid input",fg_color="red")
+#     else:
+#         print("Robot not connected")
+#         output_log_frame.configure(text="Robot not connected",fg_color="red")
 
 def open_arm():
     if is_connected:
@@ -258,33 +326,46 @@ def led():
         print("Robot not connected")
     # // TODO: implementer le controle de la led
 
+custom.CTkLabel(master=root_tk, text="Nombre de pas").grid(row=0, column=0, padx=10, pady=10)
+axe_x_entry = custom.CTkEntry(master=root_tk, placeholder_text="pas")
+axe_x_entry.grid(row=0, column=1, padx=10, pady=10)
 
+custom.CTkLabel(master=root_tk, text="Vitesse").grid(row=1, column=0, padx=10, pady=10)
+axe_y_entry = custom.CTkEntry(master=root_tk, placeholder_text="pas/sec")
+axe_y_entry.grid(row=1, column=1, padx=10, pady=10)
+
+# Modifiez les boutons pour le contrôle du moteur
+move_button = custom.CTkButton(master=root_tk, text="Déplacer moteur", command=move_motor_steps)
+move_button.grid(row=3, column=0, columnspan=2, pady=20)
+
+speed_button = custom.CTkButton(master=root_tk, text="Définir vitesse", command=set_motor_speed)
+speed_button.grid(row=4, column=0, columnspan=2, pady=10)
 
 
 # Création des labels et des entrées pour les axes
 
-custom.CTkLabel(master=root_tk, text="Axe X").grid(row=0, column=0, padx=10, pady=10)
-axe_x_entry = custom.CTkEntry(master=root_tk,placeholder_text="mm")
-axe_x_entry.grid(row=0, column=1, padx=10, pady=10)
-
-custom.CTkLabel(master=root_tk, text="Axe Y").grid(row=1, column=0, padx=10, pady=10)
-axe_y_entry = custom.CTkEntry(master=root_tk,placeholder_text="mm")
-axe_y_entry.grid(row=1, column=1, padx=10, pady=10)
-
-custom.CTkLabel(master=root_tk, text="Axe Z").grid(row=2, column=0, padx=10, pady=10)
-axe_z_entry = custom.CTkEntry(master=root_tk,placeholder_text="mm")
-axe_z_entry.grid(row=2, column=1, padx=10, pady=10)
-
-# Création des boutons
-move_button = custom.CTkButton(master=root_tk, text="Move", command=move_robot)
-move_button.grid(row=3, column=0, columnspan=2, pady=20)
-
-open_arm_button = custom.CTkButton(master=root_tk, text="Open Arm", command=open_arm)
-open_arm_button.grid(row=4, column=0, pady=10)
-
-close_arm_button = custom.CTkButton(master=root_tk, text="Close Arm", command=close_arm)
-close_arm_button.grid(row=4, column=1, pady=10)
-
+# custom.CTkLabel(master=root_tk, text="Axe X").grid(row=0, column=0, padx=10, pady=10)
+# axe_x_entry = custom.CTkEntry(master=root_tk,placeholder_text="mm")
+# axe_x_entry.grid(row=0, column=1, padx=10, pady=10)
+#
+# custom.CTkLabel(master=root_tk, text="Axe Y").grid(row=1, column=0, padx=10, pady=10)
+# axe_y_entry = custom.CTkEntry(master=root_tk,placeholder_text="mm")
+# axe_y_entry.grid(row=1, column=1, padx=10, pady=10)
+#
+# custom.CTkLabel(master=root_tk, text="Axe Z").grid(row=2, column=0, padx=10, pady=10)
+# axe_z_entry = custom.CTkEntry(master=root_tk,placeholder_text="mm")
+# axe_z_entry.grid(row=2, column=1, padx=10, pady=10)
+#
+# # Création des boutons
+# move_button = custom.CTkButton(master=root_tk, text="Move", command=move_robot)
+# move_button.grid(row=3, column=0, columnspan=2, pady=20)
+#
+# open_arm_button = custom.CTkButton(master=root_tk, text="Open Arm", command=open_arm)
+# open_arm_button.grid(row=4, column=0, pady=10)
+#
+# close_arm_button = custom.CTkButton(master=root_tk, text="Close Arm", command=close_arm)
+# close_arm_button.grid(row=4, column=1, pady=10)
+#
 connect_button = custom.CTkButton(master=root_tk,text="Connect",command=connecter_robot)
 connect_button.grid(row=5,column=0,columnspan=2,pady=10)
 
