@@ -88,15 +88,15 @@ class ConnectionMonitor:
             time.sleep(1)
 
 
-# def handle_disconnect():
-#     global is_connected, board, stepper
-#     print("Déconnexion détectée!")
-#     is_connected = False
-#     board = None
-#     stepper = None
-#     status_label.configure(text="STATUS: OFF", fg_color="red")
-#     connect_button.configure(text="Connect", state="normal")
-#     output_log_frame.configure(text="Déconnexion détectée! Câble débranché.", fg_color="red")
+def handle_disconnect():
+    global is_connected, board, stepper
+    print("Déconnexion détectée!")
+    is_connected = False
+    board = None
+    stepper = None
+    status_label.configure(text="STATUS: OFF", fg_color="red")
+    connect_button.configure(text="Connect", state="normal")
+    output_log_frame.configure(text="Déconnexion détectée! Câble débranché.", fg_color="red")
 
 
 RAMDOM_COLOR = [random.randint(0,255),random.randint(0,255),random.randint(0,255)]
